@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Creator Studio - V13</title>
+    <title>AI CREATOR STUDIO HYBRID V2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- FIREBASE SDKs -->
@@ -44,12 +44,12 @@
         <div id="landing-view" class="absolute inset-0 flex flex-col items-center justify-center p-6 z-10 transition-opacity duration-500">
             <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-900/20 rounded-full blur-3xl pointer-events-none"></div>
             <div class="bg-[#1E293B] border border-slate-700/50 px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest text-indigo-300 uppercase mb-6 shadow-lg">Powered by Grow with Haider</div>
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-10 text-center">AI Creator Studio<br/><span class="text-emerald-400 text-2xl font-medium">Hybrid V13</span></h1>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-10 text-center">AI Creator Studio<br/><span class="text-emerald-400 text-2xl font-medium">Hybrid V2</span></h1>
             
             <button onclick="showJoinModal()" class="group relative bg-[#162032] border border-slate-800 rounded-3xl p-10 hover:border-emerald-500/50 transition-all duration-300 hover:shadow-2xl cursor-pointer transform hover:-translate-y-1 max-w-md w-full flex flex-col items-center">
                 <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg mb-6"><i data-lucide="mic" class="w-10 h-10 text-white"></i></div>
                 <h3 class="text-2xl font-bold text-white mb-2">Start Generating</h3>
-                <p class="text-slate-400 text-sm mb-6">Real AI Previews • Instant Polls • History</p>
+                <p class="text-slate-400 text-sm mb-6">Turbo Speed • Real AI Previews • History</p>
                 <span class="flex items-center gap-2 px-6 py-2 bg-emerald-500/10 text-emerald-400 rounded-full text-sm font-bold group-hover:bg-emerald-500 group-hover:text-white transition-all">Open Studio <i data-lucide="arrow-right" class="w-4 h-4"></i></span>
             </button>
         </div>
@@ -85,7 +85,7 @@
 
             <div class="pl-16 flex-1 flex flex-col h-full">
                 <div class="border-b border-slate-800 bg-[#0F172A]/80 backdrop-blur-md sticky top-0 z-20 px-6 py-3 flex justify-between items-center">
-                    <h1 class="text-lg font-bold text-white flex items-center gap-2"><span class="bg-emerald-500/10 text-emerald-400 p-1 rounded"><i data-lucide="zap" class="w-4 h-4"></i></span> Creator Studio</h1>
+                    <h1 class="text-lg font-bold text-white flex items-center gap-2"><span class="bg-emerald-500/10 text-emerald-400 p-1 rounded"><i data-lucide="zap" class="w-4 h-4"></i></span> Creator Studio V2</h1>
                     <div class="flex bg-slate-800 rounded-lg p-1">
                         <button onclick="switchMode('single')" id="mode-btn-single" class="px-4 py-1.5 rounded-md text-xs font-bold bg-emerald-600 text-white transition-all">Single</button>
                         <button onclick="switchMode('dialogue')" id="mode-btn-dialogue" class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition-all">Dialogue</button>
@@ -134,9 +134,12 @@
                                     <div><div class="flex justify-between mb-2 text-xs font-medium"><span class="text-slate-400 uppercase">Pitch</span><span id="pitch-val" class="text-emerald-400">Normal</span></div><input type="range" id="pitch-range" min="0.5" max="1.5" step="0.1" value="1.0" class="w-full accent-emerald-500 bg-slate-700 h-1 rounded-lg appearance-none cursor-pointer"></div>
                                 </div>
                                 <div class="grid grid-cols-1 gap-2">
-                                    <button id="generate-btn" onclick="startApiGeneration()" class="py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex justify-center items-center gap-2 transition-all shadow-lg shadow-emerald-900/20"><i data-lucide="download" class="w-4 h-4"></i> Generate Audio</button>
+                                    <button id="generate-btn" onclick="startApiGeneration()" class="py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex justify-center items-center gap-2 transition-all shadow-lg shadow-emerald-900/20"><i data-lucide="download" class="w-4 h-4"></i> Generate Audio (Turbo)</button>
                                     <div id="progress-container" class="hidden mt-2 bg-slate-800 rounded-lg p-3">
-                                        <div class="flex justify-between text-[10px] text-slate-400 mb-1"><span>Processing...</span><span id="time-estimate" class="text-emerald-400 font-bold">~0s</span></div>
+                                        <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                                            <span>Processing... <span id="part-indicator" class="text-emerald-400 font-bold ml-1"></span></span>
+                                            <span id="time-estimate" class="text-emerald-400 font-bold">~0s</span>
+                                        </div>
                                         <div class="w-full bg-slate-700 rounded-full h-1.5 overflow-hidden"><div id="progress-bar" class="bg-emerald-500 h-1.5 rounded-full w-0 progress-bar-stripes transition-all duration-300"></div></div>
                                     </div>
                                 </div>
@@ -279,6 +282,7 @@
         let previewTimeout = null;
         let generationTimer = null;
         let historyDB = null;
+        let currentKeyIndex = 0;
 
         try { 
             app=firebase.initializeApp(firebaseConfig); 
@@ -541,36 +545,69 @@
             
             btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processing...`; btn.disabled = true;
             getEl('progress-container').classList.remove('hidden'); getEl('progress-bar').style.width = '0%';
-            
-            let currentTime = 0; const est = itemsToGenerate.length * 3;
-            if(generationTimer) clearInterval(generationTimer);
-            generationTimer = setInterval(() => { currentTime++; getEl('progress-bar').style.width = `${Math.min((currentTime/est)*100, 95)}%`; getEl('time-estimate').innerText = `~${Math.max(0,est-currentTime)}s`; }, 1000);
+            getEl('part-indicator').innerText = "(Starting)";
 
-            // LOG START (Using a simple comprehensive text)
+            // --- 1. PREPARE ALL CHUNKS & TASKS ---
+            let allTasks = [];
+            let globalChunkIndex = 0;
+            itemsToGenerate.forEach(item => {
+                const chunks = chunkText(item.text, CHUNK_SIZE);
+                chunks.forEach(chunk => {
+                    allTasks.push({ 
+                        text: chunk, 
+                        voice: item.voice,
+                        order: globalChunkIndex++ // Keep track of order for stitching
+                    });
+                });
+            });
+
+            const totalParts = allTasks.length;
+            let completedParts = 0;
+            getEl('part-indicator').innerText = `(0/${totalParts})`;
+            getEl('time-estimate').innerText = `~${totalParts * 2}s`;
+
+            // --- 2. LOG START ---
             let logText = "";
-            if (state.mode === 'single') {
-                logText = state.text;
-            } else {
-                // Construct a readable log for dialogue
-                logText = itemsToGenerate.map(i => `${i.voice}: ${i.text}`).join('\n');
-            }
-            
-            // Log first, then generate
-            let logId = null;
-            try {
-                logId = await logActivity(logText, "processing");
-                if(db) getArtifactRef('stats').doc('global').update({pending_generations: firebase.firestore.FieldValue.increment(1)}).catch(()=>{});
-            } catch(e) { console.log("Log start failed", e); }
+            if (state.mode === 'single') logText = state.text;
+            else logText = itemsToGenerate.map(i => `${i.voice}: ${i.text}`).join('\n');
+            let logId = await logActivity(logText, "processing");
+            if(db) getArtifactRef('stats').doc('global').update({pending_generations: firebase.firestore.FieldValue.increment(1)}).catch(()=>{});
 
             try {
-                let allBuffers = [];
-                for (let item of itemsToGenerate) {
-                    for(let chunk of chunkText(item.text, CHUNK_SIZE)) {
-                        allBuffers.push(await fetchTTS(chunk, item.voice, pool));
-                        await new Promise(r => setTimeout(r, 200));
+                // --- 3. EXECUTE WITH CONCURRENCY LIMIT (5) ---
+                const CONCURRENCY_LIMIT = 5;
+                const results = new Array(totalParts);
+                const executing = [];
+
+                // Helper to run a single task
+                const runTask = async (task) => {
+                     try {
+                        const buffer = await fetchTTS(task.text, task.voice, pool);
+                        results[task.order] = buffer;
+                        completedParts++;
+                        getEl('part-indicator').innerText = `(${completedParts}/${totalParts})`;
+                        getEl('progress-bar').style.width = `${(completedParts/totalParts)*100}%`;
+                     } catch (e) {
+                        console.error("Chunk failed", e);
+                        throw e; // Propagate error to fail the batch or retry logic
+                     }
+                };
+
+                // Queue Management
+                for (const task of allTasks) {
+                    const p = runTask(task).then(() => {
+                        // Remove self from executing array
+                        executing.splice(executing.indexOf(p), 1);
+                    });
+                    executing.push(p);
+                    if (executing.length >= CONCURRENCY_LIMIT) {
+                        await Promise.race(executing); // Wait for at least one to finish
                     }
                 }
-                const finalBlob = mergeWavBuffers(allBuffers);
+                await Promise.all(executing); // Wait for remaining
+                
+                // --- 4. MERGE & FINISH ---
+                const finalBlob = mergeWavBuffers(results.filter(b => b)); // Filter undefined/failed
                 saveToHistory(finalBlob, itemsToGenerate[0].text, state.mode);
                 const url = URL.createObjectURL(finalBlob);
                 getEl('download-link').href = url; getEl('download-link').download = `tts-${Date.now()}.wav`; getEl('download-card').classList.remove('hidden');
@@ -585,13 +622,65 @@
                 if(db) getArtifactRef('stats').doc('global').update({pending_generations: firebase.firestore.FieldValue.increment(-1), failed_generations: firebase.firestore.FieldValue.increment(1)});
             }
             
-            clearInterval(generationTimer); getEl('progress-container').classList.add('hidden'); btn.innerHTML = `<i data-lucide="download" class="w-4 h-4"></i> Generate Audio`; btn.disabled = false; try{lucide.createIcons();}catch(e){}
+            getEl('progress-container').classList.add('hidden'); btn.innerHTML = `<i data-lucide="download" class="w-4 h-4"></i> Generate Audio`; btn.disabled = false; try{lucide.createIcons();}catch(e){}
         }
         function chunkText(s, len){ const r=[]; for(let i=0;i<s.length;i+=len)r.push(s.substring(i,i+len)); return r; }
         function mergeWavBuffers(buffers) { if(buffers.length===0) return new Blob([]); let totalLen=0; const parts=buffers.map(b=>{if(b.byteLength<44)return b; const v=new DataView(b); if(v.getUint32(0)===0x52494646){totalLen+=b.byteLength-44; return b.slice(44);} totalLen+=b.byteLength; return b;}); const h=createWavHeader(totalLen); return new Blob([h,...parts],{type:'audio/wav'}); }
         function createWavHeader(len) { const b=new ArrayBuffer(44),v=new DataView(b); writeString(v,0,'RIFF'); v.setUint32(4,36+len,true); writeString(v,8,'WAVE'); writeString(v,12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,24000,true); v.setUint32(28,48000,true); v.setUint16(32,2,true); v.setUint16(34,16,true); writeString(v,36,'data'); v.setUint32(40,len,true); return b; }
         function writeString(v,o,s) { for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); }
-        async function fetchTTS(text, vid, keyPool){ let att=0; while(att<keyPool.length*2){ const k=keyPool[Math.floor(Math.random()*keyPool.length)]; try{ const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${TTS_MODEL}:generateContent?key=${k}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text}]}],generationConfig:{responseModalities:["AUDIO"],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:vid}}}}})}); if(!r.ok) throw new Error(r.status); const d=await r.json(); const b=atob(d.candidates[0].content.parts[0].inlineData.data); const len=b.length; const u=new Uint8Array(len); for(let i=0;i<len;i++) u[i]=b.charCodeAt(i); return u.buffer; }catch(e){att++; await new Promise(r=>setTimeout(r,500));} } throw new Error("Busy"); }
+        
+        async function fetchTTS(text, vid, keyPool){ 
+            let attempts = 0;
+            const maxAttempts = keyPool.length * 2; // Try through the pool twice before giving up
+            
+            while(attempts < maxAttempts){ 
+                // ROTATION: Get current key and move pointer
+                const keyIndex = currentKeyIndex % keyPool.length;
+                const key = keyPool[keyIndex];
+                currentKeyIndex++; // Prepare for next call/retry
+
+                try { 
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${TTS_MODEL}:generateContent?key=${key}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: text }] }],
+                            generationConfig: {
+                                responseModalities: ["AUDIO"],
+                                speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: vid } } }
+                            }
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errText = await response.text(); // Get error details
+                        console.warn(`Key ${key.substr(0,5)}... failed (${response.status}). Trying next key.`);
+                        throw new Error(`API Error ${response.status}: ${errText}`);
+                    }
+
+                    const data = await response.json(); 
+                    const base64Audio = data.candidates[0].content.parts[0].inlineData.data; 
+                    
+                    // Decode Base64
+                    const binaryString = atob(base64Audio); 
+                    const len = binaryString.length; 
+                    const bytes = new Uint8Array(len); 
+                    for (let i = 0; i < len; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    return bytes.buffer; 
+
+                } catch(e) {
+                    attempts++; 
+                    // If it's the last attempt, throw the error to the main loop
+                    if (attempts >= maxAttempts) throw e;
+                    
+                    // Short delay before retrying with NEXT key
+                    await new Promise(r => setTimeout(r, 300));
+                } 
+            } 
+            throw new Error("All keys failed or system busy."); 
+        }
 
         function loadAdminData(){ 
             if(!db) return; 
