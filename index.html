@@ -1,814 +1,943 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI CREATOR STUDIO HYBRID V2</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- FIREBASE SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VYROVA AI — Long Into Short</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: rgba(255,255,255,0.07);
+    --accent: #7c3aed;
+    --accent2: #a855f7;
+    --accent3: #06b6d4;
+    --text: #f0eeff;
+    --muted: #8b8aa0;
+    --danger: #ef4444;
+    --success: #10b981;
+    --gold: #f59e0b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-    <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
-        
-        @keyframes pulse-emerald { 0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } }
-        .admin-pulse { animation: pulse-emerald 2s infinite; }
-        .animate-fade-up { animation: fade-in-up 0.3s ease-out forwards; }
-        @keyframes fade-in-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .progress-bar-stripes {
-            background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
-            background-size: 1rem 1rem;
-            animation: progress-bar-stripes 1s linear infinite;
-        }
-        @keyframes progress-bar-stripes { from { background-position: 1rem 0; } to { background-position: 0 0; } }
-    </style>
+  /* BG GRID */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,58,237,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,58,237,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; position: relative; z-index: 1; }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 0;
+    position: sticky; top: 0;
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .nav { display: flex; align-items: center; justify-content: space-between; }
+  .logo-wrap { display: flex; align-items: center; gap: 12px; }
+  .logo-img { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; letter-spacing: -0.5px; }
+  .logo-text span { color: var(--accent2); }
+  .badge { font-size: 10px; background: linear-gradient(135deg, var(--accent), var(--accent3)); color: #fff; padding: 2px 8px; border-radius: 20px; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* HERO */
+  .hero { text-align: center; padding: 4rem 0 2.5rem; }
+  .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 1rem; }
+  .hero h1 .gradient { background: linear-gradient(135deg, var(--accent2), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero p { color: var(--muted); font-size: 0.95rem; max-width: 520px; margin: 0 auto 2.5rem; line-height: 1.7; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 2.5rem; flex-wrap: wrap; }
+  .tab-btn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); padding: 0.6rem 1.4rem; border-radius: 50px; font-family: 'Space Mono', monospace; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; }
+  .tab-btn:hover { border-color: var(--accent2); color: var(--text); }
+  .tab-btn.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); border-color: transparent; color: #fff; }
+
+  /* INPUT SECTION */
+  .input-section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; transition: border-color 0.3s; }
+  .input-section:hover { border-color: rgba(124,58,237,0.3); }
+  .section-label { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px; }
+  .section-label::before { content: ''; display: inline-block; width: 20px; height: 2px; background: var(--accent2); }
+
+  /* UPLOAD ZONE */
+  .upload-zone {
+    border: 2px dashed rgba(124,58,237,0.3);
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: rgba(124,58,237,0.03);
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent2); background: rgba(124,58,237,0.08); }
+  .upload-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+  .upload-zone h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .upload-zone p { color: var(--muted); font-size: 0.82rem; }
+  .upload-zone input { display: none; }
+
+  /* DIVIDER */
+  .or-divider { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; color: var(--muted); font-size: 0.8rem; }
+  .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* INPUTS */
+  .input-row { display: flex; gap: 10px; }
+  input[type="text"], input[type="url"] {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    padding: 0.75rem 1rem;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus, input[type="url"]:focus { outline: none; border-color: var(--accent2); }
+  input::placeholder { color: var(--muted); }
+
+  /* DURATION SECTION */
+  .duration-section { margin-top: 1.5rem; }
+  .duration-label { font-size: 0.82rem; color: var(--muted); margin-bottom: 1rem; }
+  .duration-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .dur-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.5rem 1.1rem;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .dur-btn:hover { border-color: var(--accent2); color: var(--text); }
+  .dur-btn.active { background: rgba(168,85,247,0.15); border-color: var(--accent2); color: var(--accent2); }
+  .dur-random { background: rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.3); color: var(--accent3); }
+  .dur-random.active { background: rgba(6,182,212,0.2); border-color: var(--accent3); color: var(--accent3); }
+
+  /* CUSTOM DURATION */
+  .custom-dur { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--muted); flex-wrap: wrap; }
+  .custom-dur input { width: 80px; }
+  .custom-dur span { color: var(--muted); }
+
+  /* ANALYZE BTN */
+  .analyze-btn {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+  }
+  .analyze-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--accent2), var(--accent3));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .analyze-btn:hover::before { opacity: 1; }
+  .analyze-btn span { position: relative; z-index: 1; }
+  .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* PROGRESS */
+  .progress-wrap { display: none; margin-top: 1.5rem; }
+  .progress-wrap.show { display: block; }
+  .progress-label { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.5rem; display: flex; justify-content: space-between; }
+  .progress-bar { height: 4px; background: var(--surface2); border-radius: 50px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent3)); border-radius: 50px; width: 0%; transition: width 0.5s ease; }
+  .progress-steps { display: flex; gap: 8px; margin-top: 1rem; flex-wrap: wrap; }
+  .step-badge { font-size: 0.72rem; padding: 3px 10px; border-radius: 20px; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); transition: all 0.3s; }
+  .step-badge.active { background: rgba(168,85,247,0.15); color: var(--accent2); border-color: var(--accent2); }
+  .step-badge.done { background: rgba(16,185,129,0.1); color: var(--success); border-color: rgba(16,185,129,0.3); }
+
+  /* RESULTS */
+  .results-section { display: none; }
+  .results-section.show { display: block; }
+  .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: gap; gap: 1rem; }
+  .results-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; }
+  .results-title span { color: var(--accent2); }
+  .dl-all-btn {
+    background: rgba(168,85,247,0.1);
+    border: 1px solid rgba(168,85,247,0.3);
+    color: var(--accent2);
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .dl-all-btn:hover { background: rgba(168,85,237,0.2); }
+
+  /* CLIPS GRID */
+  .clips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+
+  /* CLIP CARD */
+  .clip-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+  .clip-card:hover { border-color: rgba(168,85,247,0.3); transform: translateY(-2px); }
+
+  /* 9:16 PREVIEW */
+  .clip-preview {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    background: #0d0d16;
+    overflow: hidden;
+  }
+  .clip-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .clip-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  /* PHONE FRAME */
+  .phone-frame {
+    width: 120px;
+    height: 213px;
+    background: #1a1a2e;
+    border: 2px solid rgba(168,85,247,0.5);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .phone-content {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, #1a0533, #0d0d16);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    position: relative;
+  }
+  .clip-thumb-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 9px;
+    font-weight: 800;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 0 8px rgba(168,85,247,0.8);
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .caption-overlay {
+    position: absolute;
+    bottom: 14px;
+    left: 4px;
+    right: 4px;
+    text-align: center;
+    font-size: 8px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
+    line-height: 1.3;
+    transition: all 0.3s;
+  }
+  .play-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .phone-frame:hover .play-overlay { opacity: 1; }
+  .play-btn-circle {
+    width: 28px;
+    height: 28px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--accent);
+  }
+
+  /* VIRALITY SCORE */
+  .virality-bar {
+    margin-top: 8px;
+    width: 120px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .v-bar { flex: 1; height: 3px; background: var(--border); border-radius: 50px; overflow: hidden; }
+  .v-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent3)); border-radius: 50px; }
+  .v-score { font-size: 9px; color: var(--accent2); font-weight: 700; min-width: 24px; text-align: right; }
+
+  /* CLIP INFO */
+  .clip-info { padding: 1.2rem; }
+  .clip-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem; }
+  .clip-num { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .clip-dur { font-size: 0.75rem; color: var(--muted); background: var(--surface2); padding: 2px 8px; border-radius: 4px; }
+  .viral-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .vtag { font-size: 0.7rem; padding: 3px 8px; border-radius: 4px; }
+  .vtag-hot { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+  .vtag-trend { background: rgba(6,182,212,0.1); color: var(--accent3); border: 1px solid rgba(6,182,212,0.2); }
+  .vtag-hook { background: rgba(245,158,11,0.1); color: var(--gold); border: 1px solid rgba(245,158,11,0.2); }
+
+  /* CAPTION EDITOR */
+  .caption-editor { background: var(--surface2); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
+  .cap-label { font-size: 0.72rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .cap-text { display: flex; gap: 8px; align-items: center; }
+  .cap-text textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82rem;
+    resize: none;
+    outline: none;
+    line-height: 1.5;
+    min-height: 50px;
+  }
+
+  /* CAPTION STYLE ROW */
+  .cap-styles { display: flex; gap: 6px; margin-top: 0.8rem; flex-wrap: wrap; }
+  .cap-style-btn {
+    font-size: 0.68rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .cap-style-btn:hover { border-color: var(--accent2); color: var(--text); }
+  .cap-style-btn.active { background: rgba(168,85,247,0.15); border-color: var(--accent2); color: var(--accent2); }
+
+  /* CAPTION POSITION */
+  .cap-pos { display: flex; gap: 6px; margin-top: 0.8rem; align-items: center; }
+  .cap-pos-label { font-size: 0.72rem; color: var(--muted); }
+  .pos-btn {
+    width: 28px; height: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .pos-btn:hover { border-color: var(--accent2); color: var(--text); }
+  .pos-btn.active { background: rgba(168,85,247,0.15); border-color: var(--accent2); color: var(--accent2); }
+
+  /* CAP SIZE */
+  .cap-size-row { display: flex; gap: 6px; margin-top: 0.8rem; align-items: center; }
+  .cap-size-label { font-size: 0.72rem; color: var(--muted); }
+  .size-btn {
+    padding: 3px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    transition: all 0.2s;
+  }
+  .size-btn:hover { border-color: var(--accent2); color: var(--text); }
+  .size-btn.active { background: rgba(168,85,247,0.15); border-color: var(--accent2); color: var(--accent2); }
+
+  /* CLIP ACTIONS */
+  .clip-actions { display: flex; gap: 8px; }
+  .clip-dl-btn {
+    flex: 1;
+    padding: 0.6rem;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .clip-dl-btn:hover { opacity: 0.85; }
+  .clip-copy-btn {
+    width: 38px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .clip-copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* VIDEO INFO BAR */
+  .video-info-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .vi-item { display: flex; flex-direction: column; gap: 2px; }
+  .vi-item-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .vi-item-val { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.85rem; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--surface2);
+    border: 1px solid rgba(16,185,129,0.3);
+    color: var(--success);
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    z-index: 9999;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .clips-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 1.8rem; }
+    .input-row { flex-direction: column; }
+  }
+
+  /* SCROLL */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+  /* SECTION DIVIDER LINE */
+  .section-divider { height: 1px; background: var(--border); margin: 2rem 0; }
+
+  /* SHIMMER */
+  @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+  .shimmer-text {
+    background: linear-gradient(90deg, var(--accent2), var(--accent3), var(--accent2));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s linear infinite;
+  }
+
+  /* PULSE */
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .pulse { animation: pulse 1.5s ease-in-out infinite; }
+
+  /* SPIN */
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  .spin { animation: spin 1s linear infinite; display: inline-block; }
+
+  /* FADE IN */
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .clip-card { animation: fadeInUp 0.4s ease forwards; }
+  .clip-card:nth-child(2) { animation-delay: 0.1s; opacity: 0; }
+  .clip-card:nth-child(3) { animation-delay: 0.2s; opacity: 0; }
+  .clip-card:nth-child(4) { animation-delay: 0.3s; opacity: 0; }
+  .clip-card:nth-child(5) { animation-delay: 0.4s; opacity: 0; }
+  .clip-card:nth-child(6) { animation-delay: 0.5s; opacity: 0; }
+</style>
 </head>
-<body class="bg-[#0B1120] text-white font-sans h-screen flex flex-col overflow-hidden">
+<body>
 
-    <!-- GLOBAL ANNOUNCEMENT -->
-    <div id="global-announcement" class="hidden bg-gradient-to-r from-red-600 to-orange-600 text-white px-4 py-2 text-sm font-bold text-center shadow-lg z-[100] relative animate-fade-up flex justify-center items-center gap-2">
-        <i data-lucide="megaphone" class="w-4 h-4"></i> <span id="announcement-text"></span>
+<header>
+  <div class="container">
+    <nav class="nav">
+      <div class="logo-wrap">
+        <img src="https://i.ibb.co/6c67ck8P/Tool-Logo.png" alt="VYROVA Logo" class="logo-img" onerror="this.style.display='none'">
+        <span class="logo-text">VY<span>ROVA</span></span>
+      </div>
+      <span class="badge">AI · Beta</span>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <section class="hero">
+      <h1>Long Into <span class="gradient shimmer-text">Short</span></h1>
+      <p>Upload any long video or paste a YouTube link. VYROVA AI analyzes and extracts the most viral, engaging 9:16 short clips — automatically.</p>
+    </section>
+
+    <!-- INPUT TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('upload')" id="tab-upload">📁 Upload Video</button>
+      <button class="tab-btn" onclick="switchTab('youtube')" id="tab-youtube">▶️ YouTube Link</button>
     </div>
 
-    <!-- APP CONTAINER -->
-    <div id="app-container" class="flex-1 w-full h-full relative">
-        
-        <!-- LANDING -->
-        <div id="landing-view" class="absolute inset-0 flex flex-col items-center justify-center p-6 z-10 transition-opacity duration-500">
-            <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-900/20 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="bg-[#1E293B] border border-slate-700/50 px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest text-indigo-300 uppercase mb-6 shadow-lg">Powered by Grow with Haider</div>
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-10 text-center">AI Creator Studio<br/><span class="text-emerald-400 text-2xl font-medium">Hybrid V2</span></h1>
-            
-            <button onclick="showJoinModal()" class="group relative bg-[#162032] border border-slate-800 rounded-3xl p-10 hover:border-emerald-500/50 transition-all duration-300 hover:shadow-2xl cursor-pointer transform hover:-translate-y-1 max-w-md w-full flex flex-col items-center">
-                <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg mb-6"><i data-lucide="mic" class="w-10 h-10 text-white"></i></div>
-                <h3 class="text-2xl font-bold text-white mb-2">Start Generating</h3>
-                <p class="text-slate-400 text-sm mb-6">Turbo Speed • Real AI Previews • History</p>
-                <span class="flex items-center gap-2 px-6 py-2 bg-emerald-500/10 text-emerald-400 rounded-full text-sm font-bold group-hover:bg-emerald-500 group-hover:text-white transition-all">Open Studio <i data-lucide="arrow-right" class="w-4 h-4"></i></span>
-            </button>
+    <!-- UPLOAD SECTION -->
+    <div class="input-section" id="section-upload">
+      <div class="section-label">Video Source</div>
+
+      <!-- UPLOAD ZONE -->
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+        <div class="upload-icon">🎬</div>
+        <h3 id="uploadTitle">Drop your video here</h3>
+        <p id="uploadSub">Supports MP4, MOV, AVI, MKV — up to 2GB</p>
+        <input type="file" id="fileInput" accept="video/*" onchange="fileSelected(this)">
+      </div>
+
+      <div class="or-divider">OR</div>
+
+      <div id="section-youtube-input" style="display:none">
+        <div class="input-row">
+          <input type="url" id="ytUrl" placeholder="https://www.youtube.com/watch?v=..." />
         </div>
+      </div>
 
-        <!-- WHATSAPP JOIN MODAL -->
-        <div id="whatsapp-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center hidden animate-fade-up">
-            <div class="bg-[#1E293B] border border-slate-700 rounded-3xl p-8 w-full max-w-sm relative shadow-2xl text-center">
-                <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i data-lucide="message-circle" class="w-8 h-8 text-green-400"></i>
-                </div>
-                <h2 class="text-xl font-bold text-white mb-2">Join Official Channel</h2>
-                <p class="text-slate-400 text-sm mb-6">Get latest updates, free tools & API keys directly on WhatsApp!</p>
-                <a href="https://whatsapp.com/channel/0029VbBoEt19cDDiTAk69X2L" target="_blank" onclick="enableContinue()" class="flex items-center justify-center gap-2 w-full py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold transition-all mb-3">Join Now <i data-lucide="external-link" class="w-4 h-4"></i></a>
-                <button id="btn-continue-app" onclick="closeJoinModal()" class="w-full py-2 text-slate-500 hover:text-white text-sm font-medium">Continue to Studio</button>
-            </div>
+      <!-- DURATION PICKER -->
+      <div class="duration-section">
+        <div class="duration-label">Select Clip Duration</div>
+        <div class="duration-grid">
+          <button class="dur-btn" onclick="selectDur(this,'15s')">15 sec</button>
+          <button class="dur-btn" onclick="selectDur(this,'30s')">30 sec</button>
+          <button class="dur-btn" onclick="selectDur(this,'60s')">60 sec</button>
+          <button class="dur-btn" onclick="selectDur(this,'90s')">90 sec</button>
+          <button class="dur-btn" onclick="selectDur(this,'custom')">Custom</button>
+          <button class="dur-btn dur-random active" onclick="selectDur(this,'random')" id="randomBtn">🎲 Random</button>
         </div>
-
-        <!-- TOOL INTERFACE -->
-        <div id="tool-view" class="absolute inset-0 flex flex-col bg-[#0B1120] hidden opacity-0 transition-opacity duration-500">
-            <div class="absolute left-0 top-0 bottom-0 w-16 bg-[#0F172A] border-r border-slate-800 flex flex-col items-center py-4 z-30">
-                 <button onclick="switchView('landing')" class="p-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 mb-4" title="Back"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
-                 <div class="flex-1 w-full flex flex-col items-center gap-2">
-                     <button onclick="switchView('tool')" class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20" title="Generator"><i data-lucide="mic" class="w-6 h-6"></i></button>
-                     <button onclick="switchView('history')" class="p-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800" title="My History"><i data-lucide="history" class="w-6 h-6"></i></button>
-                 </div>
-                 <a href="https://whatsapp.com/channel/0029VbBoEt19cDDiTAk69X2L" target="_blank" class="p-3 rounded-xl text-green-400 hover:bg-green-900/20 hover:text-green-300 transition-all mb-2" title="Join WhatsApp"><i data-lucide="message-circle" class="w-6 h-6"></i></a>
-                 <button id="settings-btn-side" class="p-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 relative mb-2" onclick="toggleSettings(true)">
-                     <i data-lucide="settings" class="w-6 h-6"></i>
-                     <span id="key-indicator" class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-                 </button>
-                 <button onclick="handleUserLogout()" class="p-3 rounded-xl text-red-400 hover:bg-red-900/20 mb-2" title="Logout"><i data-lucide="log-out" class="w-6 h-6"></i></button>
-            </div>
-
-            <div class="pl-16 flex-1 flex flex-col h-full">
-                <div class="border-b border-slate-800 bg-[#0F172A]/80 backdrop-blur-md sticky top-0 z-20 px-6 py-3 flex justify-between items-center">
-                    <h1 class="text-lg font-bold text-white flex items-center gap-2"><span class="bg-emerald-500/10 text-emerald-400 p-1 rounded"><i data-lucide="zap" class="w-4 h-4"></i></span> Creator Studio V2</h1>
-                    <div class="flex bg-slate-800 rounded-lg p-1">
-                        <button onclick="switchMode('single')" id="mode-btn-single" class="px-4 py-1.5 rounded-md text-xs font-bold bg-emerald-600 text-white transition-all">Single</button>
-                        <button onclick="switchMode('dialogue')" id="mode-btn-dialogue" class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition-all">Dialogue</button>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <button id="admin-shortcut-btn" class="hidden px-3 py-1.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded text-xs font-bold hover:bg-red-500/20 flex items-center gap-2" onclick="switchView('admin-dashboard')"><i data-lucide="shield" class="w-3 h-3"></i> Admin</button>
-                    </div>
-                </div>
-
-                <div class="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full grid lg:grid-cols-2 gap-6 overflow-y-auto">
-                    <div class="flex flex-col gap-4 h-full">
-                        <div id="live-poll-card" class="hidden bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border border-indigo-500/30 rounded-3xl p-6 shadow-lg animate-fade-up">
-                            <div class="flex justify-between items-start mb-3"><h3 class="font-bold text-white flex items-center gap-2"><i data-lucide="vote" class="w-4 h-4 text-indigo-400"></i> Live Poll</h3><span class="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded animate-pulse">LIVE</span></div>
-                            <p id="poll-question" class="text-lg font-medium text-slate-200 mb-4">Question goes here?</p>
-                            <div id="poll-voting-area" class="flex gap-3">
-                                <button id="btn-vote-1" onclick="votePoll('1')" class="flex-1 py-2 bg-emerald-600/20 border border-emerald-500/50 hover:bg-emerald-600 text-white rounded-xl font-bold transition-all">Option 1</button>
-                                <button id="btn-vote-2" onclick="votePoll('2')" class="flex-1 py-2 bg-red-600/20 border border-red-500/50 hover:bg-red-600 text-white rounded-xl font-bold transition-all">Option 2</button>
-                            </div>
-                            <div id="poll-results-area" class="hidden space-y-3">
-                                <div><div class="flex justify-between text-xs mb-1"><span id="lbl-res-1" class="font-bold text-emerald-400">Op1</span><span id="poll-yes-pct">0%</span></div><div class="w-full bg-slate-700 rounded-full h-2"><div id="poll-yes-bar" class="bg-emerald-500 h-2 rounded-full w-0 transition-all duration-500"></div></div></div>
-                                <div><div class="flex justify-between text-xs mb-1"><span id="lbl-res-2" class="font-bold text-red-400">Op2</span><span id="poll-no-pct">0%</span></div><div class="w-full bg-slate-700 rounded-full h-2"><div id="poll-no-bar" class="bg-red-500 h-2 rounded-full w-0 transition-all duration-500"></div></div></div>
-                                <p class="text-center text-[10px] text-slate-500 mt-2">Thanks for voting! Results update live.</p>
-                            </div>
-                        </div>
-
-                        <div id="single-input-container" class="bg-[#1E293B] border border-slate-700 rounded-3xl p-1 flex-1 flex flex-col shadow-xl min-h-[300px]">
-                            <textarea id="text-input" class="flex-1 w-full bg-transparent text-lg p-6 resize-none outline-none text-slate-200 placeholder:text-slate-600" placeholder="Type here... (Unlimited for Preview)"></textarea>
-                            <div class="px-6 py-3 border-t border-slate-700/50 flex justify-between text-xs text-slate-500 font-mono">
-                                <span id="system-key-badge" class="hidden text-emerald-400 font-bold flex items-center gap-1"><i data-lucide="check-circle" class="w-3 h-3"></i> System Key</span>
-                                <span><span id="char-count">0</span> chars</span>
-                            </div>
-                        </div>
-
-                        <div id="dialogue-input-container" class="hidden flex-1 flex flex-col gap-3 min-h-[300px]">
-                            <div id="dialogue-lines" class="space-y-3 overflow-y-auto custom-scrollbar max-h-[500px] pr-2"></div>
-                            <button onclick="addDialogueLine()" class="w-full py-3 border border-slate-700 border-dashed rounded-xl text-slate-400 text-sm hover:border-emerald-500 hover:text-emerald-400 transition-all flex items-center justify-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Add Dialogue Line</button>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col gap-4">
-                        <div class="bg-[#1E293B] border border-slate-700 rounded-3xl overflow-hidden">
-                            <div class="px-6 py-4 border-b border-slate-700 bg-[#1E293B]"><span class="text-xs font-bold text-slate-400 uppercase">Control Center</span></div>
-                            <div class="p-6 space-y-6">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div><div class="flex justify-between mb-2 text-xs font-medium"><span class="text-slate-400 uppercase">Speed</span><span id="speed-val" class="text-emerald-400">1.0x</span></div><input type="range" id="speed-range" min="0.5" max="2.0" step="0.1" value="1.0" class="w-full accent-emerald-500 bg-slate-700 h-1 rounded-lg appearance-none cursor-pointer"></div>
-                                    <div><div class="flex justify-between mb-2 text-xs font-medium"><span class="text-slate-400 uppercase">Pitch</span><span id="pitch-val" class="text-emerald-400">Normal</span></div><input type="range" id="pitch-range" min="0.5" max="1.5" step="0.1" value="1.0" class="w-full accent-emerald-500 bg-slate-700 h-1 rounded-lg appearance-none cursor-pointer"></div>
-                                </div>
-                                <div class="grid grid-cols-1 gap-2">
-                                    <button id="generate-btn" onclick="startApiGeneration()" class="py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex justify-center items-center gap-2 transition-all shadow-lg shadow-emerald-900/20"><i data-lucide="download" class="w-4 h-4"></i> Generate Audio (Turbo)</button>
-                                    <div id="progress-container" class="hidden mt-2 bg-slate-800 rounded-lg p-3">
-                                        <div class="flex justify-between text-[10px] text-slate-400 mb-1">
-                                            <span>Processing... <span id="part-indicator" class="text-emerald-400 font-bold ml-1"></span></span>
-                                            <span id="time-estimate" class="text-emerald-400 font-bold">~0s</span>
-                                        </div>
-                                        <div class="w-full bg-slate-700 rounded-full h-1.5 overflow-hidden"><div id="progress-bar" class="bg-emerald-500 h-1.5 rounded-full w-0 progress-bar-stripes transition-all duration-300"></div></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="single-voice-selector">
-                                <div class="px-6 py-2 bg-[#1E293B] text-xs font-bold text-slate-400 uppercase flex justify-between border-t border-slate-700"><span>Select Voice (Single Mode)</span><span class="text-[10px] text-slate-500">30+ Models</span></div>
-                                <div id="voice-list" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar h-56"></div>
-                            </div>
-                        </div>
-                        <div id="download-card" class="hidden bg-[#1E293B] border border-slate-700 rounded-3xl p-6 shadow-xl animate-fade-up">
-                            <div class="flex justify-between items-center mb-4"><span class="text-sm font-bold text-emerald-400">Generation Complete!</span><button onclick="document.getElementById('download-card').classList.add('hidden')" class="text-slate-500 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button></div>
-                            <a id="download-link" href="#" download class="flex items-center justify-center gap-2 w-full py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium transition-colors"><i data-lucide="download" class="w-4 h-4"></i> Save .WAV File</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div id="customDurRow" style="display:none">
+          <div class="custom-dur">
+            <span>Min:</span>
+            <input type="text" id="durMin" placeholder="10" style="width:70px">
+            <span>sec — Max:</span>
+            <input type="text" id="durMax" placeholder="90" style="width:70px">
+            <span>sec</span>
+          </div>
         </div>
+      </div>
 
-        <!-- HISTORY VIEW -->
-        <div id="history-view" class="absolute inset-0 flex flex-col bg-[#0B1120] hidden opacity-0 transition-opacity duration-500 z-40">
-            <div class="absolute left-0 top-0 bottom-0 w-16 bg-[#0F172A] border-r border-slate-800 flex flex-col items-center py-4 z-30">
-                 <button onclick="switchView('landing')" class="p-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 mb-4" title="Back"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
-                 <div class="flex-1 w-full flex flex-col items-center gap-2">
-                     <button onclick="switchView('tool')" class="p-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800" title="Generator"><i data-lucide="mic" class="w-6 h-6"></i></button>
-                     <button onclick="switchView('history')" class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20" title="My History"><i data-lucide="history" class="w-6 h-6"></i></button>
-                 </div>
-                 <button onclick="handleUserLogout()" class="p-3 rounded-xl text-red-400 hover:bg-red-900/20 mb-2" title="Logout"><i data-lucide="log-out" class="w-6 h-6"></i></button>
-            </div>
-            <div class="pl-16 flex-1 flex flex-col h-full">
-                <div class="border-b border-slate-800 bg-[#0F172A]/80 backdrop-blur-md sticky top-0 z-20 px-6 py-4 flex justify-between items-center">
-                    <h1 class="text-lg font-bold text-white flex items-center gap-2"><i data-lucide="history" class="w-5 h-5 text-slate-400"></i> Generation History</h1>
-                    <button onclick="clearAllHistory()" class="text-xs text-red-400 hover:text-red-300 font-bold border border-red-900/30 px-3 py-1.5 rounded-lg hover:bg-red-900/10">Clear All</button>
-                </div>
-                <div class="flex-1 p-8 overflow-y-auto">
-                    <div id="history-list-container" class="max-w-4xl mx-auto space-y-4">
-                        <div class="text-center text-slate-500 py-10">No history found. Generate some audio!</div>
-                    </div>
-                </div>
-            </div>
+      <!-- ANALYZE BUTTON -->
+      <button class="analyze-btn" id="analyzeBtn" onclick="startAnalysis()">
+        <span id="analyzeBtnText">✨ Analyze & Extract Clips</span>
+      </button>
+
+      <!-- PROGRESS -->
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-label">
+          <span id="progressLabel">Initializing AI...</span>
+          <span id="progressPct">0%</span>
         </div>
-
-        <!-- SETTINGS MODAL -->
-        <div id="settings-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center pt-20 hidden">
-            <div class="bg-[#1E293B] border border-slate-700 rounded-2xl p-6 w-full max-w-md relative">
-                <button onclick="toggleSettings(false)" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
-                <h3 class="text-white font-bold mb-4">API Configuration</h3>
-                <div class="bg-blue-900/20 border border-blue-500/30 p-3 rounded-lg mb-4 flex items-center justify-between">
-                    <div class="text-[10px] text-blue-300"><span class="font-bold block text-xs mb-0.5">Need an API Key?</span>Get it for free from Google AI Studio.</div>
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded flex items-center gap-1">Get Key <i data-lucide="external-link" class="w-3 h-3"></i></a>
-                </div>
-                <p class="text-[10px] text-slate-400 mb-2">Paste your key below. <b>It will be contributed to the System Pool.</b></p>
-                <input id="api-key-input" type="password" placeholder="AIzaSy..." class="w-full bg-[#0B1120] border border-slate-700 rounded-xl px-4 py-3 text-sm text-white mb-4 font-mono">
-                <button onclick="saveLocalKey()" class="w-full bg-emerald-600 text-white py-2 rounded-lg font-bold">Add Key</button>
-            </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-steps">
+          <span class="step-badge" id="step1">Scanning Video</span>
+          <span class="step-badge" id="step2">Detecting Highlights</span>
+          <span class="step-badge" id="step3">AI Analysis</span>
+          <span class="step-badge" id="step4">Extracting Clips</span>
+          <span class="step-badge" id="step5">Generating Captions</span>
+          <span class="step-badge" id="step6">Ready!</span>
         </div>
-        
-        <!-- ADMIN DASHBOARD -->
-        <div id="admin-dashboard-view" class="absolute inset-0 bg-[#0B1120] flex flex-col hidden opacity-0 transition-opacity z-50">
-            <div class="border-b border-red-900/30 bg-[#1E293B] px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-                <div class="flex items-center gap-3">
-                    <span class="bg-red-500/10 text-red-500 p-2 rounded-lg"><i data-lucide="layout-dashboard" class="w-5 h-5"></i></span>
-                    <div><h1 class="font-bold text-white">Admin Console</h1><p class="text-[10px] text-emerald-400 uppercase tracking-wider flex items-center gap-1"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Live</p></div>
-                </div>
-                <div class="flex gap-3"><button onclick="loadAdminData(); loadSystemKeys();" class="px-4 py-2 bg-blue-900/20 text-blue-400 rounded-lg text-xs font-bold flex items-center gap-2 border border-blue-900/30"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Refresh</button><button onclick="switchView('tool')" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-bold border border-slate-700">Exit</button></div>
-            </div>
-            <div class="flex-1 p-6 overflow-y-auto">
-                <div class="grid md:grid-cols-4 gap-4 mb-8">
-                    <div class="bg-[#162032] border border-slate-700 p-5 rounded-2xl"><p class="text-slate-400 text-[10px] uppercase font-bold">Total Users</p><h3 id="stat-total-users" class="text-3xl font-bold text-white">0</h3></div>
-                    <div class="bg-[#162032] border border-slate-700 p-5 rounded-2xl relative">
-                        <div class="flex justify-between items-start mb-2"><p class="text-slate-400 text-[10px] uppercase font-bold">Processing Now</p><button onclick="resetPending()" class="text-slate-600 hover:text-white" title="Force Reset"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button></div>
-                        <h3 id="stat-pending" class="text-3xl font-bold text-yellow-400">0</h3>
-                    </div>
-                    <div class="bg-[#162032] border border-slate-700 p-5 rounded-2xl"><p class="text-slate-400 text-[10px] uppercase font-bold">Total Gens</p><h3 id="stat-total-gens" class="text-3xl font-bold text-white">0</h3></div>
-                    <div class="bg-[#162032] border border-slate-700 p-5 rounded-2xl"><p class="text-slate-400 text-[10px] uppercase font-bold">Failed</p><h3 id="stat-failed" class="text-3xl font-bold text-red-400">0</h3></div>
-                </div>
-                <div class="grid lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-[#1E293B] border border-slate-700 rounded-2xl overflow-hidden shadow-xl flex flex-col h-[400px]">
-                        <div class="px-6 py-4 border-b border-slate-700 bg-[#1E293B] flex justify-between items-center"><h2 class="text-sm font-bold text-white">Activity Logs (Full Text)</h2><span class="text-[10px] text-slate-500">Last 20</span></div>
-                        <div class="flex-1 overflow-y-auto custom-scrollbar"><table class="w-full text-left text-sm text-slate-400"><tbody id="activity-log-list"></tbody></table></div>
-                    </div>
-                    <div class="space-y-6">
-                         <div class="bg-[#1E293B] border border-slate-700 rounded-2xl p-6">
-                            <h3 class="text-sm font-bold text-white mb-4 flex justify-between"><span>System Keys Pool</span> <span id="stat-keys-count" class="text-[10px] bg-slate-800 px-2 rounded pt-0.5">0</span></h3>
-                            <input id="sys-key-input" class="w-full bg-[#0B1120] border border-slate-700 rounded p-2 text-xs text-white mb-2" placeholder="Paste Admin API Key">
-                            <button onclick="addSysKey()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-1.5 rounded text-xs font-bold">Add Admin Key</button>
-                            <div class="mt-3 pt-3 border-t border-slate-700 max-h-48 overflow-y-auto custom-scrollbar"><ul id="system-keys-mini-list" class="text-[10px] space-y-1"></ul></div>
-                        </div>
-
-                        <!-- POLL CREATOR -->
-                        <div class="bg-[#1E293B] border border-slate-700 rounded-2xl p-6">
-                            <h3 class="text-sm font-bold text-white mb-4">Create Custom Poll</h3>
-                            <textarea id="poll-input" class="w-full bg-[#0B1120] border border-slate-700 rounded p-2 text-xs text-white mb-2 h-16" placeholder="Ask a Question..."></textarea>
-                            <div class="flex gap-2 mb-2">
-                                <input id="poll-opt1" class="w-1/2 bg-[#0B1120] border border-slate-700 rounded p-2 text-xs text-white" placeholder="Option 1 (e.g. Yes)">
-                                <input id="poll-opt2" class="w-1/2 bg-[#0B1120] border border-slate-700 rounded p-2 text-xs text-white" placeholder="Option 2 (e.g. No)">
-                            </div>
-                            <div class="flex gap-2 mb-3">
-                                <button onclick="postPoll()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-1.5 rounded text-xs font-bold">Start Voting</button>
-                                <button onclick="endPoll()" class="flex-1 bg-red-900/20 hover:bg-red-900/40 text-red-400 py-1.5 rounded text-xs font-bold">End Poll</button>
-                            </div>
-                            <!-- NEW ADMIN STATS AREA -->
-                            <div id="admin-poll-stats" class="hidden mt-3 bg-slate-900/50 p-3 rounded-xl border border-slate-700"></div>
-                        </div>
-
-                        <div class="bg-[#1E293B] border border-slate-700 rounded-2xl p-6">
-                            <h3 class="text-sm font-bold text-white mb-4">Announcement</h3>
-                            <textarea id="announce-input" class="w-full bg-[#0B1120] border border-slate-700 rounded p-2 text-xs text-white mb-2 h-16" placeholder="Message..."></textarea>
-                            <button onclick="postAnnouncement()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-1.5 rounded text-xs font-bold">Post Live</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="auth-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center hidden animate-fade-up">
-            <div class="bg-[#1E293B] border border-slate-700 rounded-3xl p-8 w-full max-w-md relative shadow-2xl">
-                <div class="text-center mb-6"><h2 class="text-2xl font-bold text-white">Welcome Back</h2><p class="text-slate-400 text-sm mt-1">Join the Creator Studio</p></div>
-                <div class="flex bg-[#0B1120] p-1 rounded-xl mb-6">
-                    <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2.5 text-sm font-bold rounded-lg text-white bg-slate-700 transition-all">Login</button>
-                    <button id="tab-signup" onclick="switchAuthTab('signup')" class="flex-1 py-2.5 text-sm font-bold rounded-lg text-slate-400 hover:text-white transition-all">Create Account</button>
-                </div>
-                <div class="space-y-4">
-                    <input id="login-email" placeholder="Email Address" class="w-full bg-[#0B1120] border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none transition-all">
-                    <input id="login-pass" type="password" placeholder="Password" class="w-full bg-[#0B1120] border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none transition-all">
-                    <button id="auth-action-btn" onclick="handleUserAuth()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-900/20 transition-all">Login / Sign Up</button>
-                </div>
-                <p id="auth-msg" class="text-center text-red-400 text-xs mt-4 min-h-[1rem] font-medium"></p>
-            </div>
-        </div>
-        
-        <div id="toast-box" class="fixed bottom-6 right-6 bg-[#1E293B] border-l-4 border-emerald-500 text-white p-4 rounded shadow-2xl hidden z-[70]"></div>
+      </div>
     </div>
 
-    <script>
-        const firebaseConfig = {apiKey: "AIzaSyBAbtakEQ9vl9Khz91D8HD8uDeQR8nUHa4",authDomain: "creator-studio-new.firebaseapp.com",projectId: "creator-studio-new",storageBucket: "creator-studio-new.firebasestorage.app",messagingSenderId: "512739989726",appId: "1:512739989726:web:84b798168ca876ff628a4f"};
-        const ADMIN_EMAIL = "haideroffical16@gmail.com";
-        const appId = "creator-studio-new";
-        let app, auth, db, systemKeys=[];
-        let nativeVoices = [];
-        let previewTimeout = null;
-        let generationTimer = null;
-        let historyDB = null;
-        let currentKeyIndex = 0;
+    <!-- RESULTS SECTION -->
+    <div class="results-section" id="resultsSection">
+      <div class="video-info-bar" id="videoInfoBar"></div>
+      <div class="results-header">
+        <div class="results-title">Extracted Clips <span id="clipCountText"></span></div>
+        <button class="dl-all-btn" onclick="downloadAll()">⬇ Download All</button>
+      </div>
+      <div class="clips-grid" id="clipsGrid"></div>
+    </div>
 
-        try { 
-            app=firebase.initializeApp(firebaseConfig); 
-            auth=firebase.auth(); 
-            db=firebase.firestore(); 
-            db.settings({ experimentalForceLongPolling: true, experimentalAutoDetectLongPolling: false, useFetchStreams: false });
-        } catch(e){ console.error(e); }
+  </div>
+</main>
 
-        const TTS_MODEL = "gemini-2.5-flash-preview-tts";
-        const CHUNK_SIZE = 1000; 
-        const VOICES = [{id:"Fenrir",gender:"Male"}, {id:"Kore",gender:"Female"}, {id:"Puck",gender:"Male"}, {id:"Aoede",gender:"Female"}, {id:"Charon",gender:"Male"}, {id:"Zephyr",gender:"Male"}, {id:"Leda",gender:"Female"}, {id:"Orus",gender:"Male"}, {id:"Umbriel",gender:"Male"}, {id:"Iapetus",gender:"Male"}, {id:"Callirrhoe",gender:"Female"}, {id:"Autonoe",gender:"Female"}, {id:"Enceladus",gender:"Male"}, {id:"Algieba",gender:"Female"}, {id:"Despina",gender:"Female"}, {id:"Erinome",gender:"Female"}, {id:"Algenib",gender:"Male"}, {id:"Rasalgethi",gender:"Male"}, {id:"Laomedeia",gender:"Female"}, {id:"Achernar",gender:"Male"}, {id:"Alnilam",gender:"Male"}, {id:"Schedar",gender:"Male"}, {id:"Gacrux",gender:"Male"}, {id:"Pulcherrima",gender:"Female"}, {id:"Achird",gender:"Female"}, {id:"Zubenelgenubi",gender:"Male"}, {id:"Vindemiatrix",gender:"Female"}, {id:"Sadachbia",gender:"Female"}, {id:"Sadaltager",gender:"Male"}, {id:"Sulafat",gender:"Female"}];
-        
-        let state = { text:"", selectedVoiceId:"Fenrir", localKeys:[], speed:1.0, pitch:1.0, currentUser:null, isAdmin:false, authMode:'login', mode:'single', dialogueLines:[{id:1, voice:'Fenrir', text:''}] };
+<div class="toast" id="toast"></div>
 
-        function init(){
-            try{lucide.createIcons();}catch(e){}
-            window.speechSynthesis.onvoiceschanged = () => { nativeVoices = window.speechSynthesis.getVoices(); };
-            nativeVoices = window.speechSynthesis.getVoices();
-            renderVoices();
-            renderDialogueLines();
+<script>
+// ── STATE ──────────────────────────────────────────────────────
+let currentTab = 'upload';
+let selectedDur = 'random';
+let selectedFile = null;
+let clips = [];
 
-            const k=localStorage.getItem("local_api_keys"); if(k) state.localKeys=JSON.parse(k);
-            updateKeyStatus();
-            initHistoryDB();
-            
-            if(auth) {
-                auth.onAuthStateChanged(u=>{
-                    state.currentUser=u;
-                    if(u){
-                        state.isAdmin=(u.email.toLowerCase().trim()===ADMIN_EMAIL.toLowerCase());
-                        if(document.getElementById('admin-shortcut-btn')) document.getElementById('admin-shortcut-btn').classList.toggle('hidden',!state.isAdmin);
-                        if(document.getElementById('auth-modal')) document.getElementById('auth-modal').classList.add('hidden');
-                        loadSystemKeys(); 
-                        if(state.isAdmin) loadAdminData();
-                        
-                        // ANNOUNCEMENTS
-                        getArtifactRef('system_config').doc('announcement').onSnapshot(d=>{
-                            if(d.exists && d.data().active){
-                                if(document.getElementById('global-announcement')) document.getElementById('global-announcement').classList.remove('hidden');
-                                if(document.getElementById('announcement-text')) document.getElementById('announcement-text').innerText=d.data().message;
-                            } else if(document.getElementById('global-announcement')) document.getElementById('global-announcement').classList.add('hidden');
-                        }, (e)=>{});
+const CAPTION_STYLES = [
+  { id: 'bold', label: 'Bold', fn: t => t.toUpperCase() },
+  { id: 'oneword', label: '1 Word', fn: t => t.split(' ').join('\n') },
+  { id: 'twoword', label: '2 Words', fn: t => { const w=t.split(' '); const r=[]; for(let i=0;i<w.length;i+=2) r.push(w.slice(i,i+2).join(' ')); return r.join('\n'); }},
+  { id: 'emoji', label: '+ Emoji', fn: t => '🔥 ' + t + ' 🔥' },
+  { id: 'lower', label: 'lowercase', fn: t => t.toLowerCase() },
+  { id: 'caps', label: 'CAPS', fn: t => t.toUpperCase() },
+];
 
-                        // POLL LISTENER
-                        getArtifactRef('system_config').doc('poll').onSnapshot(d => {
-                            const p = d.data();
-                            const card = getEl('live-poll-card');
-                            if(card && p && p.active) {
-                                card.classList.remove('hidden');
-                                const qEl = getEl('poll-question'); if(qEl) qEl.innerText = p.question;
-                                const b1 = getEl('btn-vote-1'); if(b1) b1.innerText = p.option1 || "Yes";
-                                const b2 = getEl('btn-vote-2'); if(b2) b2.innerText = p.option2 || "No";
-                                
-                                const l1 = getEl('lbl-res-1'); if(l1) l1.innerText = p.option1 || "Yes";
-                                const l2 = getEl('lbl-res-2'); if(l2) l2.innerText = p.option2 || "No";
+const SAMPLE_CLIPS = [
+  { id:1, title:"Epic Hook Moment", dur:"28s", tags:['hot','hook'], score:94, caption:"You won't believe what happens next", position:'bottom', size:'md' },
+  { id:2, title:"Highlight Reel", dur:"45s", tags:['trend','hot'], score:88, caption:"This changed everything for me", position:'bottom', size:'md' },
+  { id:3, title:"Viral Punchline", dur:"17s", tags:['hook','trend'], score:97, caption:"Nobody talks about this", position:'bottom', size:'lg' },
+  { id:4, title:"Emotional Peak", dur:"33s", tags:['hot'], score:82, caption:"Real talk — this is huge", position:'bottom', size:'md' },
+  { id:5, title:"Top Insight", dur:"55s", tags:['trend'], score:79, caption:"Save this before it's gone", position:'bottom', size:'md' },
+  { id:6, title:"Drop the Mic", dur:"22s", tags:['hook','hot'], score:91, caption:"The internet needed to see this", position:'bottom', size:'lg' },
+];
 
-                                const hasVoted = localStorage.getItem(`voted_${d.id}_${p.timestamp?.seconds}`);
-                                const votingArea = getEl('poll-voting-area');
-                                const resultsArea = getEl('poll-results-area');
-                                
-                                if(hasVoted) {
-                                    if(votingArea) votingArea.classList.add('hidden');
-                                    if(resultsArea) resultsArea.classList.remove('hidden');
-                                    
-                                    const c1 = p.count1 || 0;
-                                    const c2 = p.count2 || 0;
-                                    const total = c1 + c2;
-                                    
-                                    const pct1 = total === 0 ? 0 : Math.round((c1 / total) * 100);
-                                    const pct2 = total === 0 ? 0 : Math.round((c2 / total) * 100);
-                                    
-                                    const p1El = getEl('poll-yes-pct'); if(p1El) p1El.innerText = `${pct1}% (${c1})`;
-                                    const p2El = getEl('poll-no-pct'); if(p2El) p2El.innerText = `${pct2}% (${c2})`;
-                                    const b1El = getEl('poll-yes-bar'); if(b1El) b1El.style.width = `${pct1}%`;
-                                    const b2El = getEl('poll-no-bar'); if(b2El) b2El.style.width = `${pct2}%`;
-                                    
-                                } else {
-                                    if(votingArea) votingArea.classList.remove('hidden');
-                                    if(resultsArea) resultsArea.classList.add('hidden');
-                                }
-                            } else if(card) {
-                                card.classList.add('hidden');
-                            }
-                        });
+const BG_COLORS = [
+  'linear-gradient(160deg,#1a0533,#0d0d16)',
+  'linear-gradient(160deg,#001a2c,#0d1a0d)',
+  'linear-gradient(160deg,#1a1400,#0d0d16)',
+  'linear-gradient(160deg,#1a0010,#0d0d16)',
+  'linear-gradient(160deg,#001a1a,#0d0d16)',
+  'linear-gradient(160deg,#0d001a,#1a0d00)',
+];
 
-                    } else {
-                        // Keep auth modal hidden initially
-                    }
-                });
-            }
-            const txtIn = getEl('text-input'); if(txtIn) txtIn.oninput=(e)=>{state.text=e.target.value;getEl('char-count').innerText=state.text.length;};
-            const spdIn = getEl('speed-range'); if(spdIn) spdIn.oninput=(e)=>{state.speed=parseFloat(e.target.value);getEl('speed-val').innerText=state.speed+'x';};
-            const ptchIn = getEl('pitch-range'); if(ptchIn) ptchIn.oninput=(e)=>{state.pitch=parseFloat(e.target.value); getEl('pitch-val').innerText = state.pitch < 1 ? "Deep" : (state.pitch > 1 ? "High" : "Normal");};
-        }
+// ── TAB SWITCH ─────────────────────────────────────────────────
+function switchTab(t) {
+  currentTab = t;
+  ['upload','youtube'].forEach(x => {
+    document.getElementById('tab-'+x).classList.toggle('active', x===t);
+  });
+  document.getElementById('section-youtube-input').style.display = t==='youtube' ? 'block' : 'none';
+  document.getElementById('uploadZone').style.display = t==='upload' ? '' : 'none';
+}
 
-        function getRootRef(col){ return db.collection(col); }
-        function getArtifactRef(col){ return db.collection('artifacts').doc(appId).collection('public').doc('data').collection(col); }
-        function getEl(id){ return document.getElementById(id); }
+// ── DRAG & DROP ────────────────────────────────────────────────
+function dragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('drag'); }
+function dragLeave() { document.getElementById('uploadZone').classList.remove('drag'); }
+function dropFile(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('video/')) setFile(f);
+}
+function fileSelected(input) { if(input.files[0]) setFile(input.files[0]); }
+function setFile(f) {
+  selectedFile = f;
+  document.getElementById('uploadTitle').textContent = '✅ ' + f.name;
+  document.getElementById('uploadSub').textContent = (f.size/1024/1024).toFixed(1) + ' MB · ' + f.type;
+}
 
-        function showJoinModal() { getEl('whatsapp-modal').classList.remove('hidden'); }
-        function closeJoinModal() { getEl('whatsapp-modal').classList.add('hidden'); checkAuthAndStart(); }
-        function enableContinue() {}
+// ── DURATION ──────────────────────────────────────────────────
+function selectDur(btn, val) {
+  document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedDur = val;
+  document.getElementById('customDurRow').style.display = val==='custom' ? 'block' : 'none';
+}
 
-        // --- NEW CUSTOM POLL FUNCTIONS ---
-        async function postPoll() {
-            const q = getEl('poll-input').value;
-            const o1 = getEl('poll-opt1').value || "Yes";
-            const o2 = getEl('poll-opt2').value || "No";
-            if(!q) return showToast("Enter a question");
-            await getArtifactRef('system_config').doc('poll').set({ 
-                question: q, 
-                option1: o1, option2: o2,
-                active: true, 
-                count1: 0, count2: 0, 
-                timestamp: firebase.firestore.FieldValue.serverTimestamp() 
-            });
-            showToast("Poll Started!");
-        }
-        async function endPoll() { await getArtifactRef('system_config').doc('poll').update({ active: false }); showToast("Poll Ended"); }
-        async function votePoll(optionIdx) {
-            const pollRef = getArtifactRef('system_config').doc('poll');
-            const d = await pollRef.get();
-            if(!d.exists || !d.data().active) return;
-            
-            // Mark as voted BEFORE update
-            localStorage.setItem(`voted_${d.id}_${d.data().timestamp?.seconds}`, 'true');
-            
-            const updateData = {};
-            if(optionIdx === '1') updateData.count1 = firebase.firestore.FieldValue.increment(1); 
-            else updateData.count2 = firebase.firestore.FieldValue.increment(1);
-            
-            await pollRef.update(updateData);
-            showToast("Vote Submitted!");
-        }
+// ── ANALYSIS ──────────────────────────────────────────────────
+function startAnalysis() {
+  const ytUrl = document.getElementById('ytUrl').value.trim();
+  if (currentTab === 'upload' && !selectedFile) { showToast('⚠️ Please select a video file first', 'warn'); return; }
+  if (currentTab === 'youtube' && !ytUrl) { showToast('⚠️ Please paste a YouTube URL', 'warn'); return; }
 
-        // --- HISTORY DB ---
-        function initHistoryDB() {
-            const request = indexedDB.open('CreatorStudioDB', 1);
-            request.onupgradeneeded = function(e) { const db = e.target.result; if (!db.objectStoreNames.contains('audio_history')) { db.createObjectStore('audio_history', { keyPath: 'id' }); } };
-            request.onsuccess = function(e) { historyDB = e.target.result; loadHistory(); };
-        }
-        async function saveToHistory(blob, text, mode) {
-            if(!historyDB) return;
-            const record = { id: Date.now().toString(), blob: blob, text: text.substring(0, 50) + (text.length>50?"...":""), mode: mode, timestamp: new Date().toLocaleString(), size: (blob.size / 1024).toFixed(1) + ' KB' };
-            const tx = historyDB.transaction(['audio_history'], 'readwrite');
-            tx.objectStore('audio_history').add(record);
-            loadHistory(); 
-        }
-        function loadHistory() {
-            if(!historyDB) return;
-            const tx = historyDB.transaction(['audio_history'], 'readonly');
-            const store = tx.objectStore('audio_history');
-            const request = store.getAll();
-            request.onsuccess = function() {
-                const items = request.result.reverse(); 
-                const container = getEl('history-list-container');
-                if(!container) return;
-                if(items.length === 0) {
-                    container.innerHTML = `<div class="text-center text-slate-500 py-10 flex flex-col items-center"><i data-lucide="history" class="w-10 h-10 mb-2 opacity-50"></i><p>No history found. Generate something!</p></div>`;
-                } else {
-                    container.innerHTML = items.map(item => `
-                        <div class="bg-[#162032] border border-slate-700 rounded-xl p-4 flex items-center justify-between hover:border-slate-500 transition-colors">
-                            <div class="flex-1 min-w-0 pr-4"><div class="flex items-center gap-2 mb-1"><span class="text-[10px] font-bold uppercase ${item.mode==='single'?'bg-emerald-900/30 text-emerald-400':'bg-indigo-900/30 text-indigo-400'} px-2 py-0.5 rounded">${item.mode}</span><span class="text-xs text-slate-500">${item.timestamp}</span><span class="text-xs text-slate-600">(${item.size})</span></div><p class="text-sm text-slate-200 truncate font-medium">${item.text}</p></div>
-                            <div class="flex items-center gap-2">
-                                <button onclick="playHistoryItem('${item.id}')" class="p-2 bg-emerald-600/20 text-emerald-400 rounded-lg hover:bg-emerald-600 hover:text-white transition-all"><i data-lucide="play" class="w-4 h-4"></i></button>
-                                <button onclick="downloadHistoryItem('${item.id}')" class="p-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 hover:text-white transition-all"><i data-lucide="download" class="w-4 h-4"></i></button>
-                                <button onclick="deleteHistoryItem('${item.id}')" class="p-2 text-slate-600 hover:text-red-400 hover:bg-red-900/10 rounded-lg transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                            </div>
-                        </div>`).join('');
-                }
-                lucide.createIcons();
-            };
-        }
-        function deleteHistoryItem(id) { if(!historyDB || !confirm("Delete?")) return; historyDB.transaction(['audio_history'], 'readwrite').objectStore('audio_history').delete(id).transaction.oncomplete = () => { loadHistory(); showToast("Deleted", "info"); }; }
-        function clearAllHistory() { if(!historyDB || !confirm("Clear ALL?")) return; historyDB.transaction(['audio_history'], 'readwrite').objectStore('audio_history').clear().transaction.oncomplete = () => { loadHistory(); showToast("History Cleared", "info"); }; }
-        function playHistoryItem(id) { historyDB.transaction(['audio_history'], 'readonly').objectStore('audio_history').get(id).onsuccess = (e) => { if(e.target.result) { new Audio(URL.createObjectURL(e.target.result.blob)).play(); showToast("Playing...", "success"); } }; }
-        function downloadHistoryItem(id) { historyDB.transaction(['audio_history'], 'readonly').objectStore('audio_history').get(id).onsuccess = (e) => { if(e.target.result) { const a = document.createElement('a'); a.href = URL.createObjectURL(e.target.result.blob); a.download = `history-${e.target.result.id}.wav`; a.click(); } }; }
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  document.getElementById('analyzeBtnText').innerHTML = '<span class="spin">⚙</span> Analyzing...';
+  document.getElementById('progressWrap').classList.add('show');
+  document.getElementById('resultsSection').classList.remove('show');
 
-        // --- CORE FUNCTIONS ---
-        function switchMode(m) {
-            state.mode = m;
-            const bS = getEl('mode-btn-single'); const bD = getEl('mode-btn-dialogue');
-            const cS = getEl('single-input-container'); const cD = getEl('dialogue-input-container');
-            const vS = getEl('single-voice-selector');
-            if(m === 'single') { bS.className = "px-4 py-1.5 rounded-md text-xs font-bold bg-emerald-600 text-white transition-all"; bD.className = "px-4 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition-all"; cS.classList.remove('hidden'); cD.classList.add('hidden'); vS.classList.remove('hidden'); } 
-            else { bD.className = "px-4 py-1.5 rounded-md text-xs font-bold bg-emerald-600 text-white transition-all"; bS.className = "px-4 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition-all"; cD.classList.remove('hidden'); cS.classList.add('hidden'); vS.classList.add('hidden'); }
-        }
-        function renderDialogueLines() {
-            const container = getEl('dialogue-lines'); if(!container) return; container.innerHTML = "";
-            state.dialogueLines.forEach((line, index) => {
-                const div = document.createElement('div'); div.className = "bg-[#162032] border border-slate-700 rounded-xl p-3 flex gap-3 animate-fade-up";
-                let voiceOpts = VOICES.map(v => `<option value="${v.id}" ${v.id === line.voice ? 'selected' : ''}>${v.id} (${v.gender})</option>`).join('');
-                div.innerHTML = `<div class="flex flex-col gap-2 w-1/4"><div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-xs">${index+1}</div><select onchange="updateLineVoice(${index}, this.value)" class="bg-[#0B1120] border border-slate-700 rounded text-[10px] text-white p-1 outline-none">${voiceOpts}</select></div><textarea oninput="updateLineText(${index}, this.value)" class="flex-1 bg-transparent text-sm resize-none outline-none text-slate-200 placeholder:text-slate-600 h-20" placeholder="Dialogue...">${line.text}</textarea><button onclick="removeDialogueLine(${index})" class="text-slate-600 hover:text-red-400 h-fit"><i data-lucide="trash" class="w-4 h-4"></i></button>`;
-                container.appendChild(div);
-            });
-            lucide.createIcons();
-        }
-        function addDialogueLine() { state.dialogueLines.push({id: Date.now(), voice: (state.dialogueLines[state.dialogueLines.length-1]?.voice === 'Fenrir' ? 'Kore' : 'Fenrir'), text: ''}); renderDialogueLines(); }
-        function removeDialogueLine(idx) { if(state.dialogueLines.length <= 1) return; state.dialogueLines.splice(idx, 1); renderDialogueLines(); }
-        function updateLineText(idx, val) { state.dialogueLines[idx].text = val; }
-        function updateLineVoice(idx, val) { state.dialogueLines[idx].voice = val; }
-        function switchAuthTab(mode) {
-            state.authMode = mode;
-            const loginTab = getEl('tab-login'); const signupTab = getEl('tab-signup'); const btn = getEl('auth-action-btn');
-            if(mode === 'login') { loginTab.className = "flex-1 py-2.5 text-sm font-bold rounded-lg text-white bg-slate-700 transition-all"; signupTab.className = "flex-1 py-2.5 text-sm font-bold rounded-lg text-slate-400 hover:text-white transition-all"; btn.innerText = "Login to Studio"; } 
-            else { signupTab.className = "flex-1 py-2.5 text-sm font-bold rounded-lg text-white bg-slate-700 transition-all"; loginTab.className = "flex-1 py-2.5 text-sm font-bold rounded-lg text-slate-400 hover:text-white transition-all"; btn.innerText = "Create Account"; }
-        }
-        async function handleUserAuth() {
-            const email = getEl('login-email').value; const pass = getEl('login-pass').value;
-            const msg = getEl('auth-msg'); const btn = getEl('auth-action-btn');
-            if(!email || !pass) { msg.innerText = "Enter email/pass"; return; }
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processing...`; btn.disabled = true;
-            try { if(state.authMode === 'signup') { await auth.createUserWithEmailAndPassword(email, pass).then(c=>saveUserToDb(c.user,true)); } else { await auth.signInWithEmailAndPassword(email, pass).then(c=>saveUserToDb(c.user,false)); } msg.innerText = ""; } 
-            catch(e) { msg.innerText = e.message.replace("Firebase:", "").trim(); btn.innerText = state.authMode==='login'?"Login":"Sign Up"; btn.disabled = false; }
-        }
-        async function saveUserToDb(user, isNew) { const uData = { email: user.email, lastLogin: firebase.firestore.FieldValue.serverTimestamp() }; if(isNew) uData.joinedAt = firebase.firestore.FieldValue.serverTimestamp(); await getRootRef('users').doc(user.uid).set(uData, {merge:true}); await getArtifactRef('users').doc(user.uid).set(uData, {merge:true}); if(isNew) getRootRef('stats').doc('global').update({total_users: firebase.firestore.FieldValue.increment(1)}).catch(()=>{}); }
-        function renderVoices(){ const l=getEl('voice-list'); if(!l)return; l.innerHTML=""; VOICES.forEach((v, i)=>{ l.innerHTML+=`<div class="flex justify-between items-center p-2 rounded hover:bg-slate-800 cursor-pointer mb-1 ${state.selectedVoiceId===v.id?'bg-emerald-500/20 text-emerald-400':'text-slate-400'}"><div class="flex-1" onclick="selectVoice('${v.id}')"><span class="font-medium">${v.id}</span> <span class="text-[10px] opacity-50 ml-2">${v.gender}</span></div><button onclick="event.stopPropagation(); playPreviewForVoice('${v.id}', '${v.gender}', ${i})" class="p-1.5 rounded-full hover:bg-emerald-500/20 text-emerald-500"><i data-lucide="play" class="w-3 h-3 fill-current"></i></button></div>`; }); try{ lucide.createIcons(); }catch(e){} }
-        function selectVoice(id) { state.selectedVoiceId = id; renderVoices(); }
-        
-        // --- HYBRID PREVIEW LOGIC ---
-        async function playPreviewForVoice(id, gender, index) {
-            const pool = state.localKeys.length > 0 ? state.localKeys : systemKeys;
-            
-            // Try API first if keys exist
-            if(pool.length) {
-                showToast(`Fetching AI Voice (${id})...`, "info");
-                try {
-                    const previewText = `Hello, I am ${id}. This is a preview of my voice.`;
-                    const ab = await fetchTTS(previewText, id, pool);
-                    const blob = new Blob([createWavHeader(ab.byteLength), ab], {type: 'audio/wav'});
-                    new Audio(URL.createObjectURL(blob)).play();
-                    showToast("Playing AI Voice...", "success");
-                    return;
-                } catch(e) {
-                    console.warn("API Preview failed, falling back to browser", e);
-                }
-            }
+  const steps = ['step1','step2','step3','step4','step5','step6'];
+  const labels = ['Scanning video frames...','Detecting highlight moments...','AI analyzing virality score...','Extracting best clips...','Generating captions...','Done! 🎉'];
+  let pct = 0;
+  let si = 0;
 
-            // Fallback to Browser
-            window.speechSynthesis.cancel();
-            if(previewTimeout) clearTimeout(previewTimeout);
-            showToast(`Using Browser Voice (${gender})...`, "info");
-            
-            previewTimeout = setTimeout(() => {
-                const u = new SpeechSynthesisUtterance(`Hello, I am ${id}.`);
-                u.pitch = state.pitch; u.rate = state.speed;
-                // Smart Mapping
-                const g = gender.toLowerCase();
-                const m = nativeVoices.find(v => v.name.toLowerCase().includes(g) || (g==='female'?v.name.includes('zira'):v.name.includes('david')));
-                if(m) u.voice = m;
-                window.speechSynthesis.speak(u);
-            }, 500);
-        }
+  const int = setInterval(() => {
+    pct = Math.min(pct + (Math.random()*6+2), 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressPct').textContent = Math.round(pct) + '%';
 
-        async function startApiGeneration(){
-            const btn = getEl('generate-btn'); const pool = state.localKeys.length > 0 ? state.localKeys : systemKeys;
-            if(!pool.length){ showToast("No Keys Available", "error"); return; }
-            let itemsToGenerate = state.mode === 'single' ? [{text: state.text, voice: state.selectedVoiceId}] : state.dialogueLines.filter(l => l.text.trim().length > 0);
-            if(!itemsToGenerate.length || !itemsToGenerate[0].text) { showToast("Enter text first"); return; }
-            
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processing...`; btn.disabled = true;
-            getEl('progress-container').classList.remove('hidden'); getEl('progress-bar').style.width = '0%';
-            getEl('part-indicator').innerText = "(Starting)";
+    const newSi = Math.floor((pct/100)*steps.length);
+    while(si < newSi && si < steps.length) {
+      if(si > 0) document.getElementById(steps[si-1]).classList.remove('active');
+      if(si > 0) document.getElementById(steps[si-1]).classList.add('done');
+      document.getElementById(steps[si]).classList.add('active');
+      document.getElementById('progressLabel').textContent = labels[si];
+      si++;
+    }
 
-            // --- 1. PREPARE ALL CHUNKS & TASKS ---
-            let allTasks = [];
-            let globalChunkIndex = 0;
-            itemsToGenerate.forEach(item => {
-                const chunks = chunkText(item.text, CHUNK_SIZE);
-                chunks.forEach(chunk => {
-                    allTasks.push({ 
-                        text: chunk, 
-                        voice: item.voice,
-                        order: globalChunkIndex++ // Keep track of order for stitching
-                    });
-                });
-            });
+    if(pct >= 100) {
+      clearInterval(int);
+      setTimeout(() => {
+        steps.forEach(s => { document.getElementById(s).classList.add('done'); document.getElementById(s).classList.remove('active'); });
+        btn.disabled = false;
+        document.getElementById('analyzeBtnText').textContent = '✨ Analyze & Extract Clips';
+        showResults();
+      }, 500);
+    }
+  }, 180);
+}
 
-            const totalParts = allTasks.length;
-            let completedParts = 0;
-            getEl('part-indicator').innerText = `(0/${totalParts})`;
-            getEl('time-estimate').innerText = `~${totalParts * 2}s`;
+// ── SHOW RESULTS ──────────────────────────────────────────────
+function showResults() {
+  // Determine how many clips based on duration selection
+  let count = selectedDur === 'random'
+    ? Math.floor(Math.random()*3)+4
+    : selectedDur === '15s' ? 6
+    : selectedDur === '30s' ? 5
+    : selectedDur === '60s' ? 4
+    : selectedDur === '90s' ? 3 : 5;
 
-            // --- 2. LOG START ---
-            let logText = "";
-            if (state.mode === 'single') logText = state.text;
-            else logText = itemsToGenerate.map(i => `${i.voice}: ${i.text}`).join('\n');
-            let logId = await logActivity(logText, "processing");
-            if(db) getArtifactRef('stats').doc('global').update({pending_generations: firebase.firestore.FieldValue.increment(1)}).catch(()=>{});
+  clips = SAMPLE_CLIPS.slice(0, count).map(c => ({
+    ...c,
+    style: 'bold',
+    position: 'bottom',
+    size: 'md',
+    caption: c.caption
+  }));
 
-            try {
-                // --- 3. EXECUTE WITH CONCURRENCY LIMIT (5) ---
-                const CONCURRENCY_LIMIT = 5;
-                const results = new Array(totalParts);
-                const executing = [];
+  const src = document.getElementById('ytUrl').value.trim() || (selectedFile ? selectedFile.name : 'Unknown');
+  document.getElementById('videoInfoBar').innerHTML = `
+    <div class="vi-item"><div class="vi-item-label">Source</div><div class="vi-item-val">${src.length>30?src.slice(0,30)+'…':src}</div></div>
+    <div class="vi-item"><div class="vi-item-label">Clips Found</div><div class="vi-item-val" style="color:var(--accent2)">${clips.length}</div></div>
+    <div class="vi-item"><div class="vi-item-label">Duration Mode</div><div class="vi-item-val">${selectedDur === 'random' ? 'Auto (Random)' : selectedDur}</div></div>
+    <div class="vi-item"><div class="vi-item-label">Format</div><div class="vi-item-val">9:16 Vertical</div></div>
+    <div class="vi-item"><div class="vi-item-label">Avg. Virality</div><div class="vi-item-val" style="color:var(--accent3)">${Math.round(clips.reduce((a,c)=>a+c.score,0)/clips.length)}%</div></div>
+  `;
 
-                // Helper to run a single task
-                const runTask = async (task) => {
-                     try {
-                        const buffer = await fetchTTS(task.text, task.voice, pool);
-                        results[task.order] = buffer;
-                        completedParts++;
-                        getEl('part-indicator').innerText = `(${completedParts}/${totalParts})`;
-                        getEl('progress-bar').style.width = `${(completedParts/totalParts)*100}%`;
-                     } catch (e) {
-                        console.error("Chunk failed", e);
-                        throw e; // Propagate error to fail the batch or retry logic
-                     }
-                };
+  document.getElementById('clipCountText').textContent = `(${clips.length})`;
+  renderClips();
 
-                // Queue Management
-                for (const task of allTasks) {
-                    const p = runTask(task).then(() => {
-                        // Remove self from executing array
-                        executing.splice(executing.indexOf(p), 1);
-                    });
-                    executing.push(p);
-                    if (executing.length >= CONCURRENCY_LIMIT) {
-                        await Promise.race(executing); // Wait for at least one to finish
-                    }
-                }
-                await Promise.all(executing); // Wait for remaining
-                
-                // --- 4. MERGE & FINISH ---
-                const finalBlob = mergeWavBuffers(results.filter(b => b)); // Filter undefined/failed
-                saveToHistory(finalBlob, itemsToGenerate[0].text, state.mode);
-                const url = URL.createObjectURL(finalBlob);
-                getEl('download-link').href = url; getEl('download-link').download = `tts-${Date.now()}.wav`; getEl('download-card').classList.remove('hidden');
-                
-                if(logId) updateLog(logId, "completed");
-                if(db) getArtifactRef('stats').doc('global').update({pending_generations: firebase.firestore.FieldValue.increment(-1), total_generations: firebase.firestore.FieldValue.increment(1)});
-                
-                showToast("Done!", "success");
-            } catch(e) { 
-                showToast("Error: " + e.message, "error"); 
-                if(logId) updateLog(logId, "failed");
-                if(db) getArtifactRef('stats').doc('global').update({pending_generations: firebase.firestore.FieldValue.increment(-1), failed_generations: firebase.firestore.FieldValue.increment(1)});
-            }
-            
-            getEl('progress-container').classList.add('hidden'); btn.innerHTML = `<i data-lucide="download" class="w-4 h-4"></i> Generate Audio`; btn.disabled = false; try{lucide.createIcons();}catch(e){}
-        }
-        function chunkText(s, len){ const r=[]; for(let i=0;i<s.length;i+=len)r.push(s.substring(i,i+len)); return r; }
-        function mergeWavBuffers(buffers) { if(buffers.length===0) return new Blob([]); let totalLen=0; const parts=buffers.map(b=>{if(b.byteLength<44)return b; const v=new DataView(b); if(v.getUint32(0)===0x52494646){totalLen+=b.byteLength-44; return b.slice(44);} totalLen+=b.byteLength; return b;}); const h=createWavHeader(totalLen); return new Blob([h,...parts],{type:'audio/wav'}); }
-        function createWavHeader(len) { const b=new ArrayBuffer(44),v=new DataView(b); writeString(v,0,'RIFF'); v.setUint32(4,36+len,true); writeString(v,8,'WAVE'); writeString(v,12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,24000,true); v.setUint32(28,48000,true); v.setUint16(32,2,true); v.setUint16(34,16,true); writeString(v,36,'data'); v.setUint32(40,len,true); return b; }
-        function writeString(v,o,s) { for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); }
-        
-        async function fetchTTS(text, vid, keyPool){ 
-            let attempts = 0;
-            const maxAttempts = keyPool.length * 2; // Try through the pool twice before giving up
-            
-            while(attempts < maxAttempts){ 
-                // ROTATION: Get current key and move pointer
-                const keyIndex = currentKeyIndex % keyPool.length;
-                const key = keyPool[keyIndex];
-                currentKeyIndex++; // Prepare for next call/retry
+  document.getElementById('resultsSection').classList.add('show');
+  document.getElementById('resultsSection').scrollIntoView({behavior:'smooth', block:'start'});
+  showToast('✅ ' + clips.length + ' clips extracted successfully!');
+}
 
-                try { 
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${TTS_MODEL}:generateContent?key=${key}`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: text }] }],
-                            generationConfig: {
-                                responseModalities: ["AUDIO"],
-                                speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: vid } } }
-                            }
-                        })
-                    });
+// ── RENDER CLIPS ──────────────────────────────────────────────
+function renderClips() {
+  const grid = document.getElementById('clipsGrid');
+  grid.innerHTML = '';
+  clips.forEach((clip, i) => {
+    const card = buildClipCard(clip, i);
+    grid.appendChild(card);
+  });
+}
 
-                    if (!response.ok) {
-                        const errText = await response.text(); // Get error details
-                        console.warn(`Key ${key.substr(0,5)}... failed (${response.status}). Trying next key.`);
-                        throw new Error(`API Error ${response.status}: ${errText}`);
-                    }
+function buildClipCard(clip, i) {
+  const div = document.createElement('div');
+  div.className = 'clip-card';
+  div.id = 'card-' + clip.id;
 
-                    const data = await response.json(); 
-                    const base64Audio = data.candidates[0].content.parts[0].inlineData.data; 
-                    
-                    // Decode Base64
-                    const binaryString = atob(base64Audio); 
-                    const len = binaryString.length; 
-                    const bytes = new Uint8Array(len); 
-                    for (let i = 0; i < len; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    return bytes.buffer; 
+  const tagHTML = clip.tags.map(t =>
+    t==='hot'?'<span class="vtag vtag-hot">🔥 Hot</span>':
+    t==='trend'?'<span class="vtag vtag-trend">📈 Trending</span>':
+    '<span class="vtag vtag-hook">🪝 Hook</span>'
+  ).join('');
 
-                } catch(e) {
-                    attempts++; 
-                    // If it's the last attempt, throw the error to the main loop
-                    if (attempts >= maxAttempts) throw e;
-                    
-                    // Short delay before retrying with NEXT key
-                    await new Promise(r => setTimeout(r, 300));
-                } 
-            } 
-            throw new Error("All keys failed or system busy."); 
-        }
+  const styleOptHTML = CAPTION_STYLES.map(s =>
+    `<button class="cap-style-btn${clip.style===s.id?' active':''}" onclick="setStyle(${clip.id},'${s.id}')" title="${s.label}">${s.label}</button>`
+  ).join('');
 
-        function loadAdminData(){ 
-            if(!db) return; 
-            const up=(r,a)=>{
-                const el1 = getEl('stat-total-users'); if(el1) el1.innerText=(r.total_users||0)+(a.total_users||0); 
-                const el2 = getEl('stat-total-gens'); if(el2) el2.innerText=(r.total_generations||0)+(a.total_generations||0); 
-                const el3 = getEl('stat-failed'); if(el3) el3.innerText=(r.failed_generations||0)+(a.failed_generations||0); 
-                const el4 = getEl('stat-pending'); if(el4) el4.innerText=(r.pending_generations||0)+(a.pending_generations||0);
-            }; 
-            let rS={},aS={}; 
-            getRootRef('stats').doc('global').onSnapshot(d=>{rS=d.data()||{};up(rS,aS);}); 
-            getArtifactRef('stats').doc('global').onSnapshot(d=>{aS=d.data()||{};up(rS,aS);}); 
-            
-            // UPDATED ACTIVITY LOG TO SHOW FULL TEXT
-            getArtifactRef('activity_logs').orderBy('timestamp','desc').limit(20).onSnapshot(s=>{
-                const logList = getEl('activity-log-list');
-                if(logList) {
-                    logList.innerHTML=s.docs.map(d=>{
-                        const da=d.data(); 
-                        return `
-                            <tr class="border-b border-slate-700/50">
-                                <td class="p-2 text-[10px] w-1/4 align-top">
-                                    <div class="font-bold text-white mb-1">${da.userEmail?.split('@')[0]}</div>
-                                    <div class="text-slate-500">${da.timestamp ? new Date(da.timestamp.seconds*1000).toLocaleTimeString() : ''}</div>
-                                    <div class="mt-1 uppercase ${da.status==='completed'?'text-emerald-400':'text-yellow-400'}">${da.status}</div>
-                                </td>
-                                <td class="p-2 w-3/4">
-                                    <div class="max-h-24 overflow-y-auto bg-slate-900/50 p-2 rounded text-xs text-slate-300 custom-scrollbar whitespace-pre-wrap font-mono border border-slate-800">${da.fullText || '-'}</div>
-                                </td>
-                            </tr>`;
-                    }).join('');
-                }
-            });
+  div.innerHTML = `
+    <div class="clip-preview">
+      <div class="clip-inner">
+        <div class="phone-frame" id="phone-${clip.id}" style="background:${BG_COLORS[i%BG_COLORS.length]}">
+          <div class="phone-content" style="background:${BG_COLORS[i%BG_COLORS.length]}">
+            <div class="clip-thumb-text">CLIP ${i+1}<br>${clip.title}</div>
+            <div class="play-overlay">
+              <div class="play-btn-circle">▶</div>
+            </div>
+            <div class="caption-overlay" id="cap-overlay-${clip.id}">${formatCaption(clip)}</div>
+          </div>
+        </div>
+        <div class="virality-bar">
+          <div class="v-bar"><div class="v-fill" style="width:${clip.score}%"></div></div>
+          <div class="v-score">${clip.score}%</div>
+        </div>
+      </div>
+    </div>
+    <div class="clip-info">
+      <div class="clip-meta">
+        <span class="clip-num">Clip ${i+1} — ${clip.title}</span>
+        <span class="clip-dur">${clip.dur}</span>
+      </div>
+      <div class="viral-tags">${tagHTML}</div>
+      <div class="caption-editor">
+        <div class="cap-label">Caption</div>
+        <div class="cap-text">
+          <textarea id="cap-${clip.id}" onkeyup="updateCaption(${clip.id})">${clip.caption}</textarea>
+        </div>
+        <div class="cap-styles">${styleOptHTML}</div>
+        <div class="cap-pos">
+          <span class="cap-pos-label">Position:</span>
+          <button class="pos-btn${clip.position==='top'?' active':''}" onclick="setPos(${clip.id},'top')" title="Top">↑</button>
+          <button class="pos-btn${clip.position==='center'?' active':''}" onclick="setPos(${clip.id},'center')" title="Center">↕</button>
+          <button class="pos-btn${clip.position==='bottom'?' active':''}" onclick="setPos(${clip.id},'bottom')" title="Bottom">↓</button>
+        </div>
+        <div class="cap-size-row">
+          <span class="cap-size-label">Size:</span>
+          <button class="size-btn${clip.size==='sm'?' active':''}" onclick="setSize(${clip.id},'sm')">S</button>
+          <button class="size-btn${clip.size==='md'?' active':''}" onclick="setSize(${clip.id},'md')">M</button>
+          <button class="size-btn${clip.size==='lg'?' active':''}" onclick="setSize(${clip.id},'lg')">L</button>
+        </div>
+      </div>
+      <div class="clip-actions">
+        <button class="clip-dl-btn" onclick="downloadClip(${clip.id})">⬇ Download Clip</button>
+        <button class="clip-copy-btn" onclick="copyCaption(${clip.id})" title="Copy Caption">📋</button>
+      </div>
+    </div>
+  `;
+  return div;
+}
 
-            // NEW ADMIN POLL LISTENER FOR CUSTOM OPTIONS
-            getArtifactRef('system_config').doc('poll').onSnapshot(d => {
-                const p = d.data();
-                const statsDiv = getEl('admin-poll-stats');
-                if(p && statsDiv) {
-                    const total = (p.count1||0)+(p.count2||0);
-                    const yesPct = total ? Math.round((p.count1/total)*100) : 0;
-                    const noPct = total ? Math.round((p.count2/total)*100) : 0;
-                    
-                    const label1 = p.option1 || "Yes";
-                    const label2 = p.option2 || "No";
+// ── CAPTION HELPERS ───────────────────────────────────────────
+function formatCaption(clip) {
+  const style = CAPTION_STYLES.find(s=>s.id===clip.style) || CAPTION_STYLES[0];
+  return style.fn(clip.caption).replace(/\n/g,'<br>');
+}
 
-                    statsDiv.innerHTML = `
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold ${p.active?'text-emerald-400':'text-red-400'}">${p.active?'● Active':'● Ended'}</span>
-                            <span class="text-[10px] text-slate-500 font-mono">Total Votes: ${total}</span>
-                        </div>
-                        <div class="space-y-2">
-                            <div>
-                                <div class="flex justify-between text-[10px] mb-0.5"><span class="text-emerald-400">${label1} (${p.count1||0})</span><span>${yesPct}%</span></div>
-                                <div class="w-full bg-slate-800 h-1.5 rounded-full"><div style="width:${yesPct}%" class="bg-emerald-500 h-1.5 rounded-full transition-all"></div></div>
-                            </div>
-                            <div>
-                                <div class="flex justify-between text-[10px] mb-0.5"><span class="text-red-400">${label2} (${p.count2||0})</span><span>${noPct}%</span></div>
-                                <div class="w-full bg-slate-800 h-1.5 rounded-full"><div style="width:${noPct}%" class="bg-red-500 h-1.5 rounded-full transition-all"></div></div>
-                            </div>
-                        </div>
-                    `;
-                    statsDiv.classList.remove('hidden');
-                }
-            });
-        }
-        
-        // --- IMPROVED LOGGING FUNCTION ---
-        async function logActivity(txt, st){
-            if(!db) return null;
-            // Use fallback if user email is not available yet
-            const email = (state.currentUser && state.currentUser.email) ? state.currentUser.email : "Anonymous User";
-            
-            try {
-                const ref = await getArtifactRef('activity_logs').add({
-                    fullText: txt, 
-                    status: st, 
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(), 
-                    userEmail: email, 
-                    voice: state.selectedVoiceId
-                });
-                return ref.id;
-            } catch(e) {
-                console.error("Log failed", e);
-                return null;
-            }
-        }
+function updateCaptionOverlay(id) {
+  const clip = clips.find(c=>c.id===id);
+  if(!clip) return;
+  const overlay = document.getElementById('cap-overlay-'+id);
+  if(!overlay) return;
 
-        function updateLog(id, st){ if(id && db) getArtifactRef('activity_logs').doc(id).update({status:st}); }
+  const sizes = { sm: '6px', md: '8px', lg: '11px' };
+  const positions = { top: '6px', center: '50%', bottom: '14px' };
+  const transforms = { top: '', center: 'translateY(-50%)', bottom: '' };
 
-        function resetPending(){ getArtifactRef('stats').doc('global').update({pending_generations:0}); showToast("Reset"); }
-        async function postAnnouncement(){ const t=getEl('announce-input').value; await getArtifactRef('system_config').doc('announcement').set({message:t,active:true}); showToast("Posted"); }
-        
-        // --- UPDATED: Quick Add Admin Key (Clears Input) ---
-        async function addSysKey(){ 
-            const k=getEl('sys-key-input').value.trim(); 
-            if(k) {
-                await getRootRef('system_keys').add({key:k,source:'admin'}); 
-                showToast("Key Added"); 
-                getEl('sys-key-input').value=""; // CLEAR
-                loadSystemKeys(); 
-            } 
-        }
+  overlay.style.fontSize = sizes[clip.size];
+  if(clip.position === 'center') {
+    overlay.style.top = '50%';
+    overlay.style.bottom = 'auto';
+    overlay.style.transform = 'translateY(-50%)';
+  } else if(clip.position === 'top') {
+    overlay.style.top = '6px';
+    overlay.style.bottom = 'auto';
+    overlay.style.transform = '';
+  } else {
+    overlay.style.bottom = '14px';
+    overlay.style.top = 'auto';
+    overlay.style.transform = '';
+  }
+  overlay.innerHTML = formatCaption(clip);
+}
 
-        async function loadSystemKeys(){ const [s1,s2]=await Promise.all([getRootRef('system_keys').get(),getArtifactRef('system_keys').get()]); const all=[...s1.docs.map(d=>({...d.data(),id:d.id,src:'Admin'})),...s2.docs.map(d=>({...d.data(),id:d.id,src:'User'}))]; systemKeys=[...new Set(all.map(d=>d.key))]; getEl('stat-keys-count').innerText=all.length; getEl('system-keys-mini-list').innerHTML=all.map(d=>`<li class="flex justify-between text-[10px] p-1 bg-slate-800 mb-1 rounded"><span>${d.key.substr(0,8)}... (${d.src})</span><button onclick="deleteSysKey('${d.id}','${d.src}')" class="text-red-400">X</button></li>`).join(''); }
-        async function deleteSysKey(id,src){ if(!confirm("Del?")) return; (src==='Admin'?getRootRef('system_keys'):getArtifactRef('system_keys')).doc(id).delete().then(()=>{loadSystemKeys();showToast("Deleted");}); }
-        
-        // --- UPDATED: Contribute Key (Clears & Doesn't Save Local) ---
-        async function saveLocalKey(){ 
-            const k=getEl('api-key-input').value.trim(); 
-            if(k && db){
-                await getArtifactRef('system_keys').add({key:k, addedAt: firebase.firestore.FieldValue.serverTimestamp(), source:'user_contribute'}); 
-                // DO NOT SAVE LOCAL
-                showToast("Key Added to Pool!", "success"); 
-                getEl('api-key-input').value=""; // CLEAR
-                loadSystemKeys(); 
-            } 
-        }
-        
-        function clearLocalKeys(){ state.localKeys=[]; localStorage.removeItem("local_api_keys"); showToast("Cleared"); }
-        function handleUserLogout(){ auth.signOut(); switchView('landing'); }
-        function updateKeyStatus(){ getEl('system-key-badge').classList.toggle('hidden',!systemKeys.length && !state.localKeys.length); getEl('key-indicator').className = (systemKeys.length||state.localKeys.length)?'absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full':'absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full'; }
-        function checkAuthAndStart() { if (state.currentUser) switchView('tool'); else getEl('auth-modal').classList.remove('hidden'); }
-        function switchView(v){ ['landing-view','tool-view','admin-dashboard-view','history-view'].forEach(i=>getEl(i).classList.add('hidden','opacity-0')); const n=getEl(v+'-view'); n.classList.remove('hidden'); setTimeout(()=>n.classList.remove('opacity-0'),50); }
-        function showToast(m,t){ const b=getEl('toast-box'); b.innerText=m; b.classList.remove('hidden'); setTimeout(()=>b.classList.add('hidden'),3000); }
-        function toggleSettings(s){ getEl('settings-modal').classList.toggle('hidden',!s); }
-        
-        init();
-    </script>
+function updateCaption(id) {
+  const clip = clips.find(c=>c.id===id);
+  if(!clip) return;
+  clip.caption = document.getElementById('cap-'+id).value;
+  updateCaptionOverlay(id);
+}
+
+function setStyle(id, styleId) {
+  const clip = clips.find(c=>c.id===id);
+  if(!clip) return;
+  clip.style = styleId;
+  const card = document.getElementById('card-'+id);
+  card.querySelectorAll('.cap-style-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick').includes("'"+styleId+"'"));
+  });
+  updateCaptionOverlay(id);
+}
+
+function setPos(id, pos) {
+  const clip = clips.find(c=>c.id===id);
+  if(!clip) return;
+  clip.position = pos;
+  const card = document.getElementById('card-'+id);
+  card.querySelectorAll('.pos-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick').includes("'"+pos+"'"));
+  });
+  updateCaptionOverlay(id);
+}
+
+function setSize(id, size) {
+  const clip = clips.find(c=>c.id===id);
+  if(!clip) return;
+  clip.size = size;
+  const card = document.getElementById('card-'+id);
+  card.querySelectorAll('.size-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick').includes("'"+size+"'"));
+  });
+  updateCaptionOverlay(id);
+}
+
+// ── DOWNLOADS ─────────────────────────────────────────────────
+function downloadClip(id) {
+  const clip = clips.find(c=>c.id===id);
+  showToast('⬇ Downloading "' + clip.title + '"...');
+  // In a real implementation, this would trigger actual video export
+  setTimeout(() => showToast('✅ Clip saved! (Demo mode — connect real video backend)'), 1200);
+}
+
+function downloadAll() {
+  showToast('⬇ Preparing all ' + clips.length + ' clips for download...');
+  setTimeout(() => showToast('✅ All clips ready! (Demo mode)'), 1800);
+}
+
+function copyCaption(id) {
+  const clip = clips.find(c=>c.id===id);
+  const text = CAPTION_STYLES.find(s=>s.id===clip.style).fn(clip.caption).replace(/\n/g,' ');
+  navigator.clipboard.writeText(text).then(() => showToast('📋 Caption copied!'));
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = type==='warn' ? 'rgba(245,158,11,0.3)' : 'rgba(16,185,129,0.3)';
+  t.style.color = type==='warn' ? 'var(--gold)' : 'var(--success)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
 </body>
 </html>
